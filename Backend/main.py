@@ -9,7 +9,6 @@ app = FastAPI()
 class SignupRequest(BaseModel):
     fullname: str
     email: EmailStr
-    username: str
     password: str
 
 def hash_password(password: str, salt: str) -> str:

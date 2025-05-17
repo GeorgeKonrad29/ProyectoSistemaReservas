@@ -1,5 +1,7 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
+import requests
+from ttkbootstrap.dialogs import Messagebox
 
 
 class SignUpScreen(ttk.Frame):
@@ -8,6 +10,41 @@ class SignUpScreen(ttk.Frame):
         self.controller = controller
         # metodos
         self.create_widgets()
+
+    def handle_signup(self):
+        fullname = self.entry_name.get().strip()
+        email = self.entry_mail.get().strip()
+        password = self.entry_password.get().strip()
+        confirmation = self.entry_confirmation.get().strip()
+        accept_terms = self.check.instate(['selected'])
+
+        if not fullname or not email or not password or not confirmation:
+            Messagebox.show_error("Error", "Todos los campos son obligatorios")
+            return
+        if password != confirmation:
+            Messagebox.show_error("Error", "Las contraseñas no coinciden")
+            return
+        if not accept_terms:
+            Messagebox.show_error("Error", "Debes aceptar los términos y condiciones")
+            return
+        
+        try:
+            response = requests.post("http://localhost:8000/signup", json={
+                "fullname": fullname,
+                "email": email,
+                "password": password
+            })
+            response.raise_for_status()  # Lanza un error si la respuesta no es 200
+            Messagebox.show_info("Éxito", "Usuario registrado exitosamente")
+            self.controller.show_screens("login") 
+        except requests.exceptions.RequestException as e:
+            try: 
+                error_message = e.response.json().get("detail", "Error desconocido")
+            except:
+                error_message = str(e)
+            Messagebox.showerror("Error: ", error_message)
+
+
 
     def create_widgets(self):
         nav_frame = ttk.Frame(self)
@@ -52,6 +89,6 @@ class SignUpScreen(ttk.Frame):
             form_frame,
             text="Registrarme",
             bootstyle=SUCCESS,
-            command=lambda: print("aja") # funcion para registrarse
+            command=self.handle_signup
         )
         self.btn.grid(row=10, column=1, pady=5)
