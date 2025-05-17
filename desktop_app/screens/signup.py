@@ -1,82 +1,57 @@
-# desktop_app/screens/signup.py
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
-from tkinter import messagebox
 
-class SignupScreen(ttk.Frame):
+
+class SignUpScreen(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
-        self.configure_style()
+        # metodos
         self.create_widgets()
-        
-    def configure_style(self):
-        self.style = ttk.Style()
-        self.style.configure('Signup.TEntry', font=('Arial', 12))
-        self.style.configure('SignupTitle.TLabel', font=('Arial', 16, 'bold'))
-        
+
     def create_widgets(self):
-        container = ttk.Frame(self, padding=20)
-        container.pack(expand=True, fill=BOTH)
-        
-        # Título
-        ttk.Label(
-            container,
-            text="Registro",
-            style='SignupTitle.TLabel'
-        ).grid(row=0, column=0, columnspan=2, pady=20)
+        nav_frame = ttk.Frame(self)
+        nav_frame.pack(fill="x", pady=10)
 
-        # Campos del formulario
-        fields = [
-            ("Nombre completo:", 1),
-            ("Correo electrónico:", 2),
-            ("Usuario:", 3),
-            ("Contraseña:", 4),
-            ("Confirmar contraseña:", 5)
-        ]
-        
-        self.entries = {}
-        for text, row in fields:
-            ttk.Label(container, text=text).grid(row=row, column=0, padx=5, pady=5, sticky=E)
-            show = "*" if "contraseña" in text.lower() else ""
-            entry = ttk.Entry(container, show=show, style='Signup.TEntry')
-            entry.grid(row=row, column=1, padx=5, pady=5, sticky=EW)
-            self.entries[text] = entry
+        # Marco del formulario
+        form_frame = ttk.Frame(self)
+        form_frame.pack(pady=10, padx=20)
 
-        # Botón de registro
-        ttk.Button(
-            container,
-            text="Registrarse",
-            command=self.handle_signup,
-            bootstyle=SUCCESS
-        ).grid(row=6, column=0, columnspan=2, pady=20, sticky=EW)
+        ttk.Label(form_frame, text="Registro de Usuario", font=("Arial", 20, "bold")).grid(row=0, column=1, sticky="w",  pady=30)
+        # nombre
+        ttk.Label(form_frame, text="Ingrese su nombre").grid(row=1, column=1, sticky="w", pady=10)
+        self.entry_name = ttk.Entry(form_frame, width=30)
+        self.entry_name.grid(row=2, column=1, pady=5)
 
-        # Enlace de inicio de sesión
-        ttk.Label(container, text="¿Ya tienes cuenta?", foreground='gray').grid(
-            row=7, column=0, columnspan=2)
-        ttk.Button(
-            container,
-            text="Inicia sesión aquí",
-            command=lambda: self.controller.show_screen("login"),
-            bootstyle=LINK
-        ).grid(row=8, column=0, columnspan=2)
+        # correo
+        ttk.Label(form_frame, text="Ingrese su correo electronico").grid(row=3, column=1, sticky="w", pady=10)
+        self.entry_mail = ttk.Entry(form_frame, width=30)
+        self.entry_mail.grid(row=4, column=1, pady=5)
 
-        # Configurar grid
-        container.grid_columnconfigure(1, weight=1)
+        # ingrese su contraseña
+        ttk.Label(form_frame, text="ingrese su contraseña").grid(row=5, column=1, sticky="w", pady=10)
+        self.entry_password = ttk.Entry(form_frame, width=30)
+        self.entry_password.grid(row=6, column=1, pady=5)
 
-    def handle_signup(self):
-        values = {key: entry.get().strip() for key, entry in self.entries.items()}
-        
-        # Validación de campos
-        for field, value in values.items():
-            if not value:
-                messagebox.showerror("Error", f"El campo '{field[:-1]}' es obligatorio")
-                return
-                
-        if values["Contraseña:"] != values["Confirmar contraseña:"]:
-            messagebox.showerror("Error", "Las contraseñas no coinciden")
-            return
-            
-        # Lógica de registro (simulada)
-        messagebox.showinfo("Éxito", "Registro exitoso. Ahora puedes iniciar sesión")
-        self.controller.show_screen("login")
+        # confirmacion de contraseña
+        ttk.Label(form_frame, text="Confirme su contraseña").grid(row=7, column=1, sticky="w", pady=10)
+        self.entry_confirmation = ttk.Entry(form_frame, width=30)
+        self.entry_confirmation.grid(row=8, column=1, pady=5)
+
+        # aceptar terminos y condiciones
+        self.check = ttk.Checkbutton(
+            form_frame,
+            text="acepto los terminos y condiciones",
+            bootstyle="round-toggle",
+            variable=ttk.BooleanVar(value=False)
+        )
+        self.check.grid(row=9, column=1, pady=5)
+
+        # Registrarse
+        self.btn = ttk.Button(
+            form_frame,
+            text="Registrarme",
+            bootstyle=SUCCESS,
+            command=lambda: print("aja") # funcion para registrarse
+        )
+        self.btn.grid(row=10, column=1, pady=5)
