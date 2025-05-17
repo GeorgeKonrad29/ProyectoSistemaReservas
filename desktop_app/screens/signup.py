@@ -3,7 +3,6 @@ from ttkbootstrap.constants import *
 import requests
 from ttkbootstrap.dialogs import Messagebox
 
-
 class SignUpScreen(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
@@ -19,13 +18,13 @@ class SignUpScreen(ttk.Frame):
         accept_terms = self.check.instate(['selected'])
 
         if not fullname or not email or not password or not confirmation:
-            Messagebox.show_error("Error", "Todos los campos son obligatorios")
+            Messagebox.show_error("Todos los campos son obligatorios", "Error")
             return
         if password != confirmation:
-            Messagebox.show_error("Error", "Las contraseñas no coinciden")
+            Messagebox.show_error("Las contraseñas no coinciden", "Error")
             return
         if not accept_terms:
-            Messagebox.show_error("Error", "Debes aceptar los términos y condiciones")
+            Messagebox.show_error("Debes aceptar los términos y condiciones", "Error")
             return
         
         try:
@@ -35,11 +34,11 @@ class SignUpScreen(ttk.Frame):
                 "password": password
             })
             response.raise_for_status()  # Lanza un error si la respuesta no es 200
-            Messagebox.show_info("Éxito", "Usuario registrado exitosamente")
+            Messagebox.show_info("Usuario registrado exitosamente", "Registro exitoso")
             self.controller.show_screens("login") 
         except requests.exceptions.RequestException as e:
             try: 
-                error_message = e.response.json().get("detail", "Error desconocido")
+                error_message = e.response.json().get("Error desconocido", "Error desconocido")
             except:
                 error_message = str(e)
             Messagebox.show_error("Error: ", error_message)
