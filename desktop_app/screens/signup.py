@@ -42,7 +42,7 @@ class SignUpScreen(ttk.Frame):
                 error_message = e.response.json().get("detail", "Error desconocido")
             except:
                 error_message = str(e)
-            Messagebox.showerror("Error: ", error_message)
+            Messagebox.show_error("Error: ", error_message)
 
 
 
