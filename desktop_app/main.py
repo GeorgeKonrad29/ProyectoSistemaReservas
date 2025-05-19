@@ -3,7 +3,7 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 # importar las pantallas de la app
 from screens.signup import SignUpScreen
-# from screens.user import UserScreen
+from screens.user import UserScreen
 from screens.login import LoginScreen
 # from screens.config import ConfigScreen
 # from screens.bookings import BookingsScreen
@@ -27,7 +27,7 @@ class MainApp(ttk.Window):
 
     def create_screens(self):
         screens = {
-            "signup": SignUpScreen(self.container, self),
+            "sign_up": SignUpScreen(self.container, self),
             "login": LoginScreen(self.container, self),
             # "user": UserScreen(self.container, self),
             # "bookings": BookingsScreen(self.container, self),
