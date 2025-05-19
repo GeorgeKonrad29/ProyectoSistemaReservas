@@ -27,7 +27,7 @@ class MainApp(ttk.Window):
 
     def create_screens(self):
         screens = {
-            "signup": SignUpScreen(self.container, self),
+            "sign_up": SignUpScreen(self.container, self),
             "login": LoginScreen(self.container, self),
             # "user": UserScreen(self.container, self),
             # "bookings": BookingsScreen(self.container, self),

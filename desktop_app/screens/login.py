@@ -47,21 +47,23 @@ class LoginScreen(ttk.Frame):
         ttk.Label(form_frame, text="Ingrese su contraseña").grid(row=4, column=1, pady=10)
         self.entry_password = ttk.Entry(form_frame, show="*", width=30)
         self.entry_password.grid(row=5, column=1, pady=5)
+
         # boton de ingresar 
         self.btn = ttk.Button(
             form_frame,
-            text="Ingresar",
+            text="ingresar",
             bootstyle=SUCCESS,
-            command=self.handle_login
+            comman=lambda: print("ingresando") # funcion de ingreso
+        )
+        self.btn.grid(row=6, column=1, pady=10)
 
-        )
-        self.btn.grid(row=6, column=1, pady=5)
-        # boton de registrarse
-        self.btn = ttk.Button(
+        self.label_registro = ttk.Label(
             form_frame,
-            text="Registrarse",
-            bootstyle=SUCCESS,
-            command=lambda: self.controller.show_screens("signup")
+            text="No estas registrado, Crea una cuenta",
+            font=("Arial", 10, "bold"), foreground="blue"
         )
-        self.btn.grid(row=7, column=1, pady=5)
-        
+        self.label_registro.grid(row=7, column=1, pady=5)
+        self.label_registro.bind("<Button-1>", lambda e: self.show_screens("sign_up"))
+
+    def show_screens(self, name_screen):
+        self.controller.show_screens(name_screen)
