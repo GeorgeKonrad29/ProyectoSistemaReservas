@@ -32,7 +32,7 @@ def signup(user: SignupRequest):
 
     # Separar nombres y apellidos
     nombres = user.fullname.split()[0]
-    apellidos = " ".join(user.fullname.split()[1:]) or "N/A"
+    apellidos = " ".join(user.fullname.split()[1:])
 
     # Insertar en la base de datos
     cursor.execute("""

@@ -20,6 +20,19 @@ class SignUpScreen(ttk.Frame):
         if not fullname or not email or not password or not confirmation:
             Messagebox.show_error("Todos los campos son obligatorios", "Error")
             return
+        if not fullname.replace(" ", "").isalpha():
+            Messagebox.show_error("El nombre solo debe contener letras", "Error")
+            return
+        if not fullname or len(fullname.split()) < 2:
+            Messagebox.show_error("Debe contener al menos un nombre y un apellido", "Error")
+            return
+        if not email or "@" not in email or "." not in email:
+            Messagebox.show_error("El correo no es válido", "Error")
+            return
+        if len(password) < 8:
+            Messagebox.show_error("La contraseña debe tener al menos 8 caracteres", "Error")
+            return
+        
         if password != confirmation:
             Messagebox.show_error("Las contraseñas no coinciden", "Error")
             return
@@ -43,8 +56,6 @@ class SignUpScreen(ttk.Frame):
                 error_message = str(e)
             Messagebox.show_error("Error: ", error_message)
 
-
-
     def create_widgets(self):
         nav_frame = ttk.Frame(self)
         nav_frame.pack(fill="x", pady=10)
@@ -55,7 +66,7 @@ class SignUpScreen(ttk.Frame):
 
         ttk.Label(form_frame, text="Registro de Usuario", font=("Arial", 20, "bold")).grid(row=0, column=1, sticky="w",  pady=30)
         # nombre
-        ttk.Label(form_frame, text="Ingrese su nombre").grid(row=1, column=1, sticky="w", pady=10)
+        ttk.Label(form_frame, text="Ingrese su nombre y apellido").grid(row=1, column=1, sticky="w", pady=10)
         self.entry_name = ttk.Entry(form_frame, width=30)
         self.entry_name.grid(row=2, column=1, pady=5)
 
@@ -66,12 +77,12 @@ class SignUpScreen(ttk.Frame):
 
         # ingrese su contraseña
         ttk.Label(form_frame, text="ingrese su contraseña").grid(row=5, column=1, sticky="w", pady=10)
-        self.entry_password = ttk.Entry(form_frame, width=30)
+        self.entry_password = ttk.Entry(form_frame,show="*", width=30)
         self.entry_password.grid(row=6, column=1, pady=5)
 
         # confirmacion de contraseña
         ttk.Label(form_frame, text="Confirme su contraseña").grid(row=7, column=1, sticky="w", pady=10)
-        self.entry_confirmation = ttk.Entry(form_frame, width=30)
+        self.entry_confirmation = ttk.Entry(form_frame, show="*", width=30)
         self.entry_confirmation.grid(row=8, column=1, pady=5)
 
         # aceptar terminos y condiciones
