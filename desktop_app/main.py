@@ -3,17 +3,17 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 # importar las pantallas de la app
 from screens.signup import SignUpScreen
-from screens.user import UserScreen
+# from screens.user import UserScreen
 from screens.login import LoginScreen
 # from screens.config import ConfigScreen
-# from screens.bookings import BookingsScreen
+from screens.bookings import BookingsScreen
 
 
 class MainApp(ttk.Window):
     def __init__(self, theme='darkly', title='Juana'):
         super().__init__(themename=theme)
         self.title(title + "- sistema de resera")
-        # self.state("zoomed")
+        self.attributes('-fullscreen', True)
         # Contenedor principal para todas las pantallas
         self.container = ttk.Frame(self)
         self.container.pack(fill="both", expand=True)
@@ -23,14 +23,14 @@ class MainApp(ttk.Window):
         self.screens = {}
         # metodos
         self.create_screens()
-        self.show_screens("login")
+        self.show_screens("bookings")
 
     def create_screens(self):
         screens = {
-            "sign_up": SignUpScreen(self.container, self),
+            "signup": SignUpScreen(self.container, self),
             "login": LoginScreen(self.container, self),
             # "user": UserScreen(self.container, self),
-            # "bookings": BookingsScreen(self.container, self),
+            "bookings": BookingsScreen(self.container, self),
             # "config": ConfigScreen(self.container, self)
         }
         for name, screen in screens.items():
