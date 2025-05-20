@@ -29,8 +29,10 @@ class LoginScreen(ttk.Frame):
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 401:
                 Messagebox.show_error("Credenciales inválidas", "Error")
+            elif e.response.status_code == 403:
+                Messagebox.show_error("Cuenta bloqueada por 3 intentos fallidos", "Error")
             else:
-                Messagebox.show_error("Error en el servidor", "Error")
+                Messagebox.show_error("Error de conexión", "Error")
 
     def create_widgets(self):
         form_frame = ttk.Frame(self)
