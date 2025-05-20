@@ -26,12 +26,12 @@ class LoginScreen(ttk.Frame):
             response.raise_for_status()  # Lanza un error si la respuesta no es 200
             Messagebox.show_info("Login exitoso", "Éxito")
             # Aquí puedes redirigir a otra pantalla después de un login exitoso
-        except requests.exceptions.RequestException as e:
-            try: 
-                error_message = e.response.json().get("Error desconocido", "Error desconocido")
-            except:
-                error_message = str(e)
-            Messagebox.show_error("Error: ", error_message)
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 401:
+                Messagebox.show_error("Credenciales inválidas", "Error")
+            else:
+                Messagebox.show_error("Error en el servidor", "Error")
+
     def create_widgets(self):
         form_frame = ttk.Frame(self)
         form_frame.pack(padx=10, pady=10)
@@ -53,7 +53,7 @@ class LoginScreen(ttk.Frame):
             form_frame,
             text="ingresar",
             bootstyle=SUCCESS,
-            comman=lambda: print("ingresando") # funcion de ingreso
+            comman=lambda: self.handle_login() 
         )
         self.btn.grid(row=6, column=1, pady=10)
 
