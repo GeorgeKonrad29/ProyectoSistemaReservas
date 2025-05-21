@@ -1,5 +1,6 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
+from ..utils.utils import handle_login
 
 class LoginScreen(ttk.Frame):
     def __init__(self, parent, controller):
@@ -27,7 +28,7 @@ class LoginScreen(ttk.Frame):
             form_frame,
             text="ingresar",
             bootstyle=SUCCESS,
-            comman=lambda: print("ingresando") # funcion de ingreso
+            comman=lambda: self.show_screens("user") if handle_login(self.entry_mail.get().strip(), self.entry_password.get().strip()) == True else None # funcion de ingreso
         )
         self.btn.grid(row=6, column=1, pady=10)
 

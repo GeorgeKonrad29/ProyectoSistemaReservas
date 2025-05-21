@@ -23,29 +23,35 @@ class SignUpScreen(ttk.Frame):
         self.entry_name = ttk.Entry(form_frame, width=30)
         self.entry_name.grid(row=2, column=1, pady=5)
 
+        # apellido
+        ttk.Label(form_frame, text="ingrese su apellido").grid(row=3, column=1, sticky="w", pady=10)
+        self.entry_last_name = ttk.Entry(form_frame, width=30)
+        self.entry_last_name.grid(row=4, column=1, pady=5)
         # correo
-        ttk.Label(form_frame, text="Ingrese su correo electronico").grid(row=3, column=1, sticky="w", pady=10)
+        ttk.Label(form_frame, text="Ingrese su correo electronico").grid(row=5, column=1, sticky="w", pady=10)
         self.entry_mail = ttk.Entry(form_frame, width=30)
-        self.entry_mail.grid(row=4, column=1, pady=5)
+        self.entry_mail.grid(row=6, column=1, pady=5)
 
         # ingrese su contraseña
-        ttk.Label(form_frame, text="ingrese su contraseña").grid(row=5, column=1, sticky="w", pady=10)
+        ttk.Label(form_frame, text="ingrese su contraseña").grid(row=7, column=1, sticky="w", pady=10)
         self.entry_password = ttk.Entry(form_frame, width=30)
-        self.entry_password.grid(row=6, column=1, pady=5)
+        self.entry_password.grid(row=8, column=1, pady=5)
 
         # confirmacion de contraseña
-        ttk.Label(form_frame, text="Confirme su contraseña").grid(row=7, column=1, sticky="w", pady=10)
+        ttk.Label(form_frame, text="Confirme su contraseña").grid(row=9, column=1, sticky="w", pady=10)
         self.entry_confirmation = ttk.Entry(form_frame, width=30)
-        self.entry_confirmation.grid(row=8, column=1, pady=5)
+        self.entry_confirmation.grid(row=10, column=1, pady=5)
 
         # aceptar terminos y condiciones
+        self.accept = ttk.BooleanVar(value=False)
         self.check = ttk.Checkbutton(
             form_frame,
             text="acepto los terminos y condiciones",
             bootstyle="round-toggle",
-            variable=ttk.BooleanVar(value=False)
+            variable=self.accept,
+            command= lambda: self.accept.set(not self.accept.get())
         )
-        self.check.grid(row=9, column=1, pady=5)
+        self.check.grid(row=11, column=1, pady=5)
 
         # Registrarse
         self.btn = ttk.Button(
@@ -54,4 +60,4 @@ class SignUpScreen(ttk.Frame):
             bootstyle=SUCCESS,
             command=lambda: print("aja") # funcion para registrarse
         )
-        self.btn.grid(row=10, column=1, pady=5)
+        self.btn.grid(row=12, column=1, pady=5)
