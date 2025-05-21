@@ -68,11 +68,12 @@ class SignUpScreen(ttk.Frame):
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(
-                    "http://localhost:8000/signup",
+                    "http://192.168.0.11:8000/signup",
                     json={
-                        "fullname": fullname,
-                        "email": email,
-                        "password": password
+                        "correo": email,
+                        "nombres": fullname.split()[0],
+                        "apellidos": " ".join(fullname.split()[1:]),
+                        "contrasenia": password
                     }
                 ) as response:
                     response.raise_for_status()
