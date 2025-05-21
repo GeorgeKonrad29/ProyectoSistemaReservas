@@ -1,12 +1,9 @@
 from fastapi import APIRouter, HTTPException
 from database import get_connection
-import hashlib
+import bcrypt  # Nueva importación
 from datetime import datetime
 
 login_router = APIRouter()
-
-def hash_password(password: str, salt: str) -> str:
-    return hashlib.sha256((password + salt).encode()).hexdigest()
 
 def get_state(email: str) -> bool:
     """Verifica si la cuenta está bloqueada usando context manager"""
@@ -33,16 +30,20 @@ def validate_credentials(email: str, password: str) -> bool:
     with get_connection() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
-                "SELECT Contrasenia, Salt FROM Usuarios WHERE Correo = %s",
+                "SELECT Contrasenia FROM Usuarios WHERE Correo = %s",  # Se eliminó Salt
                 (email,)
             )
             result = cursor.fetchone()
     
-    if not result:
+    if not result or not result[0]:
         return False
     
-    stored_hash, salt = result
-    return hash_password(password, salt) == stored_hash
+    stored_hash = result[0]
+    # Verificar contraseña con bcrypt
+    try:
+        return bcrypt.checkpw(password.encode(), stored_hash.encode())
+    except:
+        return False
 
 def update_failed_attempts(email: str, attempts: int):
     with get_connection() as conn:
@@ -67,7 +68,7 @@ def update_blocked_status(email: str):
         with conn.cursor() as cursor:
             cursor.execute(
                 "UPDATE Usuarios SET Bloqueado = TRUE WHERE Correo = %s",
-                (email,)  # ← ¡Aquí estaba el error! La coma hace la tupla
+                (email,)
             )
             conn.commit()
 
