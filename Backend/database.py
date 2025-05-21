@@ -11,3 +11,10 @@ def get_connection():
         password=os.getenv("DB_PASSWORD"),
         database=os.getenv("DB_NAME")
     )
+#def get_connection():
+ #   return mysql.connector.connect (
+  #      host=os.getenv("192.168.0.11"),
+   #     user=os.getenv("Admin"),
+    #    password=os.getenv("Jorgeluis9"),
+     #   database=os.getenv("ProyectoReservas")
+    #)
