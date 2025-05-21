@@ -30,7 +30,7 @@ class LoginScreen(ttk.Frame):
             if e.response.status_code == 401:
                 Messagebox.show_error("Credenciales inválidas", "Error")
             elif e.response.status_code == 403:
-                Messagebox.show_error("Cuenta bloqueada por 3 intentos fallidos", "Error")
+                Messagebox.show_error("Cuenta bloqueada por 7 intentos fallidos", "Error")
             else:
                 Messagebox.show_error("Error de conexión", "Error")
 

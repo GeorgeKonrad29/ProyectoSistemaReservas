@@ -84,9 +84,9 @@ def login(data: dict):
         attempts = get_failed_attempts(email) + 1
         update_failed_attempts(email, attempts)
         
-        if attempts >= 3:
+        if attempts >= 7:
             update_blocked_status(email)
-            raise HTTPException(403, "Cuenta bloqueada por 3 intentos fallidos")
+            raise HTTPException(403, "Cuenta bloqueada por 7 intentos fallidos")
         
         raise HTTPException(401, "Credenciales inválidas")
     
