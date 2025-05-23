@@ -19,8 +19,8 @@ class LoginScreen(ttk.Frame):
             return
 
         try:
-            response = requests.post("http://localhost:8000/login", json={
-                "email": email,
+            response = requests.post("http://192.168.0.11:8000/login", json={
+                "username": email,
                 "password": password
             })
             response.raise_for_status()  # Lanza un error si la respuesta no es 200
