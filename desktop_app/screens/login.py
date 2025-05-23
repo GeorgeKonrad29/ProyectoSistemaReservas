@@ -2,7 +2,7 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 import requests
 from ttkbootstrap.dialogs import Messagebox
-
+import json # <-- Añade esta importación para manejar JSON manualmente si lo necesitas, aunque para form-urlencoded no hace falta
 
 class LoginScreen(ttk.Frame):
     def __init__(self, parent, controller):
@@ -19,20 +19,54 @@ class LoginScreen(ttk.Frame):
             return
 
         try:
-            response = requests.post("http://192.168.0.11:8000/login", json={
-                "username": email,
+            # --- CAMBIOS AQUÍ ---
+            # 1. Cambiar la URL a /token
+            # 2. Cambiar 'json=' por 'data=' y usar un diccionario para form-urlencoded
+            # 3. Establecer Content-Type explícitamente (requests lo hace automáticamente con 'data', pero es buena práctica)
+
+            # Datos para enviar en formato form-urlencoded
+            login_data = {
+                "username": email, # FastAPI espera 'username' para el correo
                 "password": password
-            })
-            response.raise_for_status()  # Lanza un error si la respuesta no es 200
+            }
+
+            response = requests.post(
+                "http://192.168.0.11:8000/login", # ¡CAMBIADO de /login a /token!
+                data=login_data, # ¡CAMBIADO de json= a data=! requests lo codificará como form-urlencoded
+                headers={"Content-Type": "application/x-www-form-urlencoded"} # Asegura el tipo de contenido
+            )
+            # --- FIN DE CAMBIOS ---
+
+            response.raise_for_status()  # Lanza un error si la respuesta no es 200 (ej: 400, 401, 403)
+
+            # Si el login es exitoso, la respuesta contendrá el token
+            login_response_data = response.json()
+            access_token = login_response_data.get("access_token")
+            token_type = login_response_data.get("token_type")
+
             Messagebox.show_info("Login exitoso", "Éxito")
-            # Aquí puedes redirigir a otra pantalla después de un login exitoso
+            print(f"Token de acceso: {access_token}") # Para depuración
+            # Aquí puedes guardar el access_token y token_type para futuras peticiones
+            # y redirigir a otra pantalla después de un login exitoso
+            self.controller.set_access_token(access_token) # Si tienes una función para guardar el token en el controller
+            self.controller.show_screens("dashboard_screen") # Ejemplo de redirección
+
         except requests.exceptions.HTTPError as e:
-            if e.response.status_code == 401:
-                Messagebox.show_error("Credenciales inválidas", "Error")
-            elif e.response.status_code == 403:
-                Messagebox.show_error("Cuenta bloqueada por 7 intentos fallidos", "Error")
+            error_detail = e.response.json().get("detail", "Error desconocido")
+            if e.response.status_code == 400:
+                Messagebox.show_error(f"Credenciales incorrectas: {error_detail}", "Error de Login")
+            elif e.response.status_code == 401: # FastAPI podría devolver 401 si el token falla
+                 Messagebox.show_error(f"Autenticación fallida: {error_detail}", "Error de Login")
+            elif e.response.status_code == 403: # Esto sería si implementaras bloqueo de cuenta
+                Messagebox.show_error(f"Acceso denegado: {error_detail}", "Error de Acceso")
+            elif e.response.status_code == 422: # Error de validación de FastAPI
+                 Messagebox.show_error(f"Error de datos enviados (422): {error_detail}", "Error de Login")
             else:
-                Messagebox.show_error("Error de conexión", "Error")
+                Messagebox.show_error(f"Error en el servidor: {e.response.status_code} - {error_detail}", "Error")
+        except requests.exceptions.ConnectionError:
+            Messagebox.show_error("No se pudo conectar al servidor. Verifique la IP o si el servidor está corriendo.", "Error de Conexión")
+        except Exception as e:
+            Messagebox.show_error(f"Ocurrió un error inesperado: {e}", "Error")
 
     def create_widgets(self):
         form_frame = ttk.Frame(self)
@@ -50,12 +84,12 @@ class LoginScreen(ttk.Frame):
         self.entry_password = ttk.Entry(form_frame, show="*", width=30)
         self.entry_password.grid(row=5, column=1, pady=5)
 
-        # boton de ingresar 
+        # boton de ingresar
         self.btn = ttk.Button(
             form_frame,
             text="ingresar",
             bootstyle=SUCCESS,
-            comman=lambda: self.handle_login() 
+            command=lambda: self.handle_login() # Corregido: 'comman' a 'command'
         )
         self.btn.grid(row=6, column=1, pady=10)
 
