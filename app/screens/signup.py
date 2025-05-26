@@ -43,15 +43,20 @@ class SignUpScreen(ttk.Frame):
         self.entry_confirmation.grid(row=10, column=1, pady=5)
 
         # aceptar terminos y condiciones
-        self.accept = ttk.BooleanVar(value=False)
-        self.check = ttk.Checkbutton(
-            form_frame,
-            text="acepto los terminos y condiciones",
-            bootstyle="round-toggle",
-            variable=self.accept,
-            command= lambda: self.accept.set(not self.accept.get())
+        terms_button = ttk.Button(
+            self,
+            text="Ver Términos y Condiciones",
+            command=self._navigate_to_terms,
+            bootstyle=INFO
         )
-        self.check.grid(row=11, column=1, pady=5)
+        terms_button.pack(pady=10)
+
+        ttk.Label(
+            form_frame,
+            text="Al registrase acepta los terminos y condicions"
+        ).grid(row=12, column=1, pady=10)
+
+
 
         # Registrarse
         self.btn = ttk.Button(
@@ -60,4 +65,8 @@ class SignUpScreen(ttk.Frame):
             bootstyle=SUCCESS,
             command=lambda: print("aja") # funcion para registrarse
         )
-        self.btn.grid(row=12, column=1, pady=5)
+        self.btn.grid(row=13, column=1, pady=5)
+
+    def _navigate_to_terms(self):
+        """Navigates to the 'terms' screen using the main controller."""
+        self.controller.show_screens("terms")
