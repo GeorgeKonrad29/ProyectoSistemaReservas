@@ -1,24 +1,25 @@
 import os
 import stripe
+import smtplib
+from email.message import EmailMessage
 from fastapi import APIRouter, Request, HTTPException
 from database import get_connection
 from dotenv import load_dotenv
 
 load_dotenv()
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
-payment_router = APIRouter(tags=["pagos"])
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+SMTP_HOST = os.getenv("SMTP_HOST")
+SMTP_USER = os.getenv("SMTP_USER")
+SMTP_PORT = int(os.getenv("SMTP_PORT"))
+SMTP_PASS = os.getenv("SMTP_PASS")
+
+payment_router = APIRouter()
 
 @payment_router.post("/payment")
 def create_payment(data: dict):
-    """
-    Genera una sesión de Stripe Checkout para la reserva indicada.
-    """
-    reserva_id = data.get("id_reserva")
-    if not reserva_id:
-        raise HTTPException(400, "Falta id_reserva en el payload")
+    reserva_id = data["id_reserva"]
 
-    # Tomamos el precio real desde la BD
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT Precio FROM reservas WHERE ID_Reserva = %s", (reserva_id,))
@@ -42,36 +43,79 @@ def create_payment(data: dict):
         metadata={"reserva_id": str(reserva_id)},
         mode="payment",
         success_url="http://localhost:8000/exito",
-        cancel_url="http://localhost:8000/cancelado",
+        cancel_url="http://localhost:8000/cancelado"
     )
-    return {"url": session.url}
 
+    return {"url": session.url}
 
 @payment_router.post("/stripe/webhook")
 async def stripe_webhook(request: Request):
-    """
-    Recibe notificaciones de Stripe y marca la reserva como 'confirmada'.
-    """
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature")
-    secret = os.getenv("STRIPE_WEBHOOK_SECRET")
+    webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
 
     try:
-        event = stripe.Webhook.construct_event(payload, sig_header, secret)
+        event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
     except stripe.error.SignatureVerificationError:
         raise HTTPException(400, "Webhook inválido")
 
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
         reserva_id = session["metadata"].get("reserva_id")
+
         conn = get_connection()
-        cur = conn.cursor()
-        cur.execute(
-            "UPDATE reservas SET Estado = 'confirmada' WHERE ID_Reserva = %s",
-            (reserva_id,)
-        )
+        cursor = conn.cursor(dictionary=True)
+
+        # Confirmar la reserva
+        cursor.execute("UPDATE reservas SET Estado = 'confirmada' WHERE ID_Reserva = %s", (reserva_id,))
         conn.commit()
-        cur.close()
+
+        # Obtener datos para el correo
+        cursor.execute("""
+            SELECT r.ID_Reserva, r.Correo_Usuario, r.Lugar, r.Precio, r.Fecha, r.ID_Escenario, e.Direccion
+            FROM reservas r
+            JOIN escenario e ON r.ID_Escenario = e.ID_Escenario
+            WHERE r.ID_Reserva = %s
+        """, (reserva_id,))
+        reserva_info = cursor.fetchone()
+
+        cursor.close()
         conn.close()
 
+        if reserva_info:
+            enviar_correo_confirmacion(reserva_info)
+
     return {"status": "ok"}
+
+def enviar_correo_confirmacion(reserva_info):
+    correo_usuario = reserva_info["Correo_Usuario"]
+
+    mensaje = EmailMessage()
+    mensaje["From"] = SMTP_USER
+    mensaje["To"] = correo_usuario
+    mensaje["Subject"] = f"Confirmación de Pago - Reserva #{reserva_info['ID_Reserva']}"
+
+    cuerpo = f"""Hola,
+
+Tu pago ha sido recibido exitosamente.
+
+Detalles de la reserva:
+- Lugar: {reserva_info['Lugar']}
+- Dirección: {reserva_info['Direccion']}
+- Fecha: {reserva_info['Fecha']}
+- Precio: ${reserva_info['Precio']}
+- ID Escenario: {reserva_info['ID_Escenario']}
+
+Gracias por usar nuestro servicio.
+"""
+
+    mensaje.set_content(cuerpo)
+
+    try:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASS)
+            server.send_message(mensaje)
+            print("Correo enviado con éxito")
+    except Exception as e:
+        print("Error al enviar el correo:", str(e))
