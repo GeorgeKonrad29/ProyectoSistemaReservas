@@ -3,17 +3,25 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 # importar las pantallas de la app
 from screens.signup import SignUpScreen
-# from screens.user import UserScreen
+from screens.home import HomeScreen
 from screens.login import LoginScreen
-# from screens.config import ConfigScreen
-# from screens.bookings import BookingsScreen
+from screens.profile import ProfileScreen
+from screens.terms import TermsScreen
+from screens.bookings import BookingsScreen
+import os
+base_app_path = os.path.dirname(__file__)
+terms_file_relative_path = os.path.join(
+    base_app_path,
+    'utils',
+    'terms and condition.txt'
+)
 
 
 class MainApp(ttk.Window):
     def __init__(self, theme='darkly', title='Juana'):
         super().__init__(themename=theme)
         self.title(title + "- sistema de resera")
-        # self.state("zoomed")
+        self.attributes('-fullscreen', True)
         # Contenedor principal para todas las pantallas
         self.container = ttk.Frame(self)
         self.container.pack(fill="both", expand=True)
@@ -22,16 +30,17 @@ class MainApp(ttk.Window):
         # atributos
         self.screens = {}
         # metodos
-        self.create_screens()
+        self.create_screens(terms_file_relative_path)
         self.show_screens("login")
 
-    def create_screens(self):
+    def create_screens(self, terms_filepath):
         screens = {
             "signup": SignUpScreen(self.container, self),
             "login": LoginScreen(self.container, self),
-            # "user": UserScreen(self.container, self),
-            # "bookings": BookingsScreen(self.container, self),
-            # "config": ConfigScreen(self.container, self)
+            "bookings": BookingsScreen(self.container, self),
+            "home": HomeScreen(self.container, self),
+            "profile": ProfileScreen(self.container, self),
+            "terms": TermsScreen(self.container, self, terms_filepath)
         }
         for name, screen in screens.items():
             self.screens[name] = screen
