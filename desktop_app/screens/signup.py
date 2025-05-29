@@ -68,7 +68,9 @@ class SignUpScreen(ttk.Frame):
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(
-                    "http://192.168.0.11:8000/signup",
+                    
+                    "http://localhost:8000/signup",  # Cambia a tu URL real
+                    #"http://192.168.0.11:8000/signup",
                     json={
                         "correo": email,
                         "nombres": fullname.split()[0],
