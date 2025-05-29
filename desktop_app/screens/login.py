@@ -19,48 +19,38 @@ class LoginScreen(ttk.Frame):
             return
 
         try:
-            # --- CAMBIOS AQUÍ ---
-            # 1. Cambiar la URL a /token
-            # 2. Cambiar 'json=' por 'data=' y usar un diccionario para form-urlencoded
-            # 3. Establecer Content-Type explícitamente (requests lo hace automáticamente con 'data', pero es buena práctica)
-
-            # Datos para enviar en formato form-urlencoded
+            # ✅ JSON correcto con claves esperadas por el backend
             login_data = {
-                "username": email, # FastAPI espera 'username' para el correo
-                "password": password
+                "correo": email,
+                "contrasenia": password
             }
 
             response = requests.post(
-                "http://192.168.0.11:8000/login", # ¡CAMBIADO de /login a /token!
-                data=login_data, # ¡CAMBIADO de json= a data=! requests lo codificará como form-urlencoded
-                headers={"Content-Type": "application/x-www-form-urlencoded"} # Asegura el tipo de contenido
+                "http://localhost:8000/login",
+                json=login_data,  # ✅ Cambiado de data= a json=
+                headers={"Content-Type": "application/json"}  # ✅ Cabecera correcta para JSON
             )
-            # --- FIN DE CAMBIOS ---
 
-            response.raise_for_status()  # Lanza un error si la respuesta no es 200 (ej: 400, 401, 403)
+            response.raise_for_status()
 
-            # Si el login es exitoso, la respuesta contendrá el token
             login_response_data = response.json()
-            access_token = login_response_data.get("access_token")
-            token_type = login_response_data.get("token_type")
 
             Messagebox.show_info("Login exitoso", "Éxito")
-            print(f"Token de acceso: {access_token}") # Para depuración
-            # Aquí puedes guardar el access_token y token_type para futuras peticiones
-            # y redirigir a otra pantalla después de un login exitoso
-            self.controller.set_access_token(access_token) # Si tienes una función para guardar el token en el controller
-            self.controller.show_screens("dashboard_screen") # Ejemplo de redirección
+            print(f"Respuesta: {login_response_data}")
+
+            self.controller.set_access_token("FAKE_TOKEN")  # Cambia esto si implementas JWT
+            self.controller.show_screens("dashboard_screen")
 
         except requests.exceptions.HTTPError as e:
             error_detail = e.response.json().get("detail", "Error desconocido")
             if e.response.status_code == 400:
                 Messagebox.show_error(f"Credenciales incorrectas: {error_detail}", "Error de Login")
-            elif e.response.status_code == 401: # FastAPI podría devolver 401 si el token falla
-                 Messagebox.show_error(f"Autenticación fallida: {error_detail}", "Error de Login")
-            elif e.response.status_code == 403: # Esto sería si implementaras bloqueo de cuenta
+            elif e.response.status_code == 401:
+                Messagebox.show_error(f"Autenticación fallida: {error_detail}", "Error de Login")
+            elif e.response.status_code == 403:
                 Messagebox.show_error(f"Acceso denegado: {error_detail}", "Error de Acceso")
-            elif e.response.status_code == 422: # Error de validación de FastAPI
-                 Messagebox.show_error(f"Error de datos enviados (422): {error_detail}", "Error de Login")
+            elif e.response.status_code == 422:
+                Messagebox.show_error(f"Error de datos enviados (422): {error_detail}", "Error de Login")
             else:
                 Messagebox.show_error(f"Error en el servidor: {e.response.status_code} - {error_detail}", "Error")
         except requests.exceptions.ConnectionError:

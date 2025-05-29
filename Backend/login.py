@@ -1,20 +1,23 @@
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, EmailStr  # Añadido BaseModel y EmailStr
 from database import get_connection
-import bcrypt  # Nueva importación
+import bcrypt
 from datetime import datetime
 
 login_router = APIRouter()
 
-def get_state(email: str) -> bool:
-    """Verifica si la cuenta está bloqueada usando context manager"""
+class LoginRequest(BaseModel):
+    correo: EmailStr 
+    contrasenia: str
+
+def get_user_state(email: str) -> bool:
     with get_connection() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
                 "SELECT Bloqueado FROM Usuarios WHERE Correo = %s", 
                 (email,)
             )
-            result = cursor.fetchone()
-            return result[0] if result else False
+            return (result[0] if (result := cursor.fetchone()) else False)
 
 def get_failed_attempts(email: str) -> int:
     with get_connection() as conn:
@@ -23,14 +26,13 @@ def get_failed_attempts(email: str) -> int:
                 "SELECT Intentos_login FROM Usuarios WHERE Correo = %s", 
                 (email,)
             )
-            result = cursor.fetchone()
-            return result[0] if result else 0
+            return (result[0] if (result := cursor.fetchone()) else 0)
 
 def validate_credentials(email: str, password: str) -> bool:
     with get_connection() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
-                "SELECT Contrasenia FROM Usuarios WHERE Correo = %s",  # Se eliminó Salt
+                "SELECT Contrasenia FROM Usuarios WHERE Correo = %s",
                 (email,)
             )
             result = cursor.fetchone()
@@ -39,11 +41,7 @@ def validate_credentials(email: str, password: str) -> bool:
         return False
     
     stored_hash = result[0]
-    # Verificar contraseña con bcrypt
-    try:
-        return bcrypt.checkpw(password.encode(), stored_hash.encode())
-    except:
-        return False
+    return bcrypt.checkpw(password.encode(), stored_hash.encode())
 
 def update_failed_attempts(email: str, attempts: int):
     with get_connection() as conn:
@@ -63,7 +61,7 @@ def update_last_login(email: str):
             )
             conn.commit()
 
-def update_blocked_status(email: str):
+def block_user_account(email: str):
     with get_connection() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
@@ -71,24 +69,30 @@ def update_blocked_status(email: str):
                 (email,)
             )
             conn.commit()
-
+            
 @login_router.post("/login")
-def login(data: dict):
-    email = data.get("email")
-    password = data.get("password")
+def login(credentials: LoginRequest):
+    email = credentials.correo  # Corregido
+    password = credentials.contrasenia  # Corregido
 
-    if get_state(email):
-        raise HTTPException(403, "Cuenta bloqueada")
+    if get_user_state(email):
+        raise HTTPException(status_code=403, detail="Cuenta bloqueada")
     
     if not validate_credentials(email, password):
         attempts = get_failed_attempts(email) + 1
         update_failed_attempts(email, attempts)
         
         if attempts >= 7:
-            update_blocked_status(email)
-            raise HTTPException(403, "Cuenta bloqueada por 7 intentos fallidos")
+            block_user_account(email)
+            raise HTTPException(
+                status_code=403, 
+                detail="Cuenta bloqueada por 7 intentos fallidos"
+            )
         
-        raise HTTPException(401, "Credenciales inválidas")
+        raise HTTPException(
+            status_code=401, 
+            detail=f"Credenciales inválidas. Intentos restantes: {7 - attempts}"
+        )
     
     update_failed_attempts(email, 0)
     update_last_login(email)
