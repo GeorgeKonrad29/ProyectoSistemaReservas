@@ -1,6 +1,7 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
-from utils.utils import handle_login
+from utils.handle_login import handle_login
+
 
 class LoginScreen(ttk.Frame):
     def __init__(self, parent, controller):

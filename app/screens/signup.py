@@ -1,5 +1,7 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
+from utils.handle_signup import trigger_signup
+from utils.handle_signup import validate_signup_fields
 
 
 class SignUpScreen(ttk.Frame):
@@ -56,17 +58,45 @@ class SignUpScreen(ttk.Frame):
             text="Al registrase acepta los terminos y condicions"
         ).grid(row=12, column=1, pady=10)
 
-
-
         # Registrarse
         self.btn = ttk.Button(
             form_frame,
             text="Registrarme",
             bootstyle=SUCCESS,
-            command=lambda: print("aja") # funcion para registrarse
+            command=lambda: self.show_screens("home") if self.signup() else None
         )
         self.btn.grid(row=13, column=1, pady=5)
 
     def _navigate_to_terms(self):
         """Navigates to the 'terms' screen using the main controller."""
         self.controller.show_screens("terms")
+
+    def show_screens(name_screen):
+        self.controller.show_screens(name_screen)
+
+    def signup(self):
+        name = self.entry_mail.get()
+        last_name = self.entry_last_name.get()
+        mail = self.entry_password.get()
+        password = self.entry_password.get()
+        confirmation = self.entry_confirmation.get()
+
+        validate = validate_signup_fields(
+            first_name=name,
+            last_name=last_name,
+            email=mail,
+            password=password,
+            confirmation=confirmation,
+            controller=self.controller
+        )
+        if validate:
+            trigger_signup(
+                mail=mail,
+                name=name,
+                last_name=last_name,
+                password=password,
+                confirmation=confirmation,
+                controller=self.controller)
+
+        return True
+

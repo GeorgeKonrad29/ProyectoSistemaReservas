@@ -31,7 +31,7 @@ class MainApp(ttk.Window):
         self.screens = {}
         # metodos
         self.create_screens(terms_file_relative_path)
-        self.show_screens("home")
+        self.show_screens("login")
 
     def create_screens(self, terms_filepath):
         screens = {
