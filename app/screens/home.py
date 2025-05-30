@@ -11,7 +11,7 @@ from utils.navbar import Navbar
 from utils.sidebar import Sidebar
 from utils.item_card import ItemCard
 from app_data import get_sample_items
-
+import requests
 class HomeScreen(ttk.Frame):
     """
     Pantalla principal donde los usuarios pueden ver y buscar objetos para prestar.
@@ -93,32 +93,76 @@ class HomeScreen(ttk.Frame):
 
     def _load_items(self):
         """
-        Carga los objetos de ejemplo y crea una tarjeta para cada uno.
-        Aquí es donde integrarías la lógica de filtrado si estuviera implementada.
+        Carga los objetos de escenario desde la API de FastAPI y crea una tarjeta para cada uno.
         """
-        # Limpiar cualquier item existente
+        # Limpiar cualquier item existente antes de cargar nuevos
         for widget in self.inner_items_frame.winfo_children():
             widget.destroy()
 
-        items = get_sample_items() # Esto vendría de app_data.py
-        # Aquí puedes aplicar la lógica de filtrado si ya tienes los valores de los filtros
-        # For example:
-        # filtered_items = self._filter_items(items)
+        # Define la URL de tu endpoint de FastAPI
+        api_url = "http://192.168.0.14:8000/escenarios?skip=0&limit=100" # Increased limit for more items
 
-        for item_data in items: # O filtered_items
+        scenarios = []
+        try:
+            # Realiza la petición GET a tu endpoint de FastAPI
+            response = requests.get(api_url, headers={"accept": "application/json"})
+            response.raise_for_status()  # Lanza un HTTPError para respuestas de error (4xx o 5xx)
+
+            # Parsea la respuesta JSON
+            scenarios = response.json()
+
+            # Asegúrate de que la respuesta sea una lista, como se espera
+            if not isinstance(scenarios, list):
+                print(f"Advertencia: La respuesta de la API no fue una lista. Recibido: {scenarios}")
+                scenarios = [] # Asume una lista vacía para evitar errores
+            
+        except requests.exceptions.ConnectionError as e:
+            print(f"Error de conexión a la API: Asegúrate de que FastAPI esté corriendo en {api_url}. Detalles: {e}")
+            # Puedes mostrar un mensaje al usuario en la UI aquí
+        except requests.exceptions.Timeout as e:
+            print(f"La petición a la API excedió el tiempo límite. Detalles: {e}")
+        except requests.exceptions.RequestException as e:
+            print(f"Error al realizar la petición GET a la API. Detalles: {e}")
+        except ValueError as e: # Catch JSON decoding errors
+            print(f"Error al parsear la respuesta JSON de la API. Detalles: {e}")
+
+        # Recorre la lista de escenarios y crea una ItemCard para cada uno
+        for scenario_data in scenarios:
+            # Mapeo de los datos de la API a los argumentos de ItemCard
+            card_name = scenario_data.get("Direccion", "Dirección Desconocida")
+            
+            # Construye una descripción combinando Capacidad y Precio
+            capacidad = scenario_data.get("Capacidad", "N/A")
+            precio = scenario_data.get("Precio", "N/A")
+            card_description = f"Capacidad: {capacidad}, Precio: ${precio}"
+            
+            # Mapea el estado booleano 'Activo' a un string descriptivo
+            activo = scenario_data.get("Activo", False)
+            card_status = "Activo" if activo else "Inactivo"
+            
+            # Asumiendo que 'Precio' de la API es tu 'daily_value'
+            card_daily_value = scenario_data.get("Precio", 0.0)
+            
+            # 'deposit_value' e 'image_path' no están en tu ejemplo de respuesta.
+            # Los manejamos con valores por defecto o None.
+            card_deposit_value = scenario_data.get("deposit_value", 0.0) # Si la API lo agrega en el futuro
+            card_image_path = scenario_data.get("image_path", None) # Si la API lo agrega en el futuro
+
             ItemCard(
                 self.inner_items_frame,
-                name=item_data["name"],
-                description=item_data["description"],
-                status=item_data["status"],
-                daily_value=item_data["daily_value"],
-                deposit_value=item_data.get("deposit_value"),
-                image_path=item_data.get("image_path")
+                name=card_name,
+                description=card_description,
+                status=card_status,
+                daily_value=float(card_daily_value), # Asegura que sea flotante
+                deposit_value=float(card_deposit_value), # Asegura que sea flotante
+                image_path=card_image_path
             ).pack(fill=X, padx=5, pady=5)
 
         # Asegurarse de que el scrollregion se actualice después de añadir items
-        self.update_idletasks()
+        # Esto es crucial para que el scrollbar funcione correctamente
+        self.master.update_idletasks() # Actualiza los widgets para que sus tamaños se calculen
         self.items_canvas.configure(scrollregion=self.items_canvas.bbox("all"))
+
 
     def _apply_filters(self):
         """
