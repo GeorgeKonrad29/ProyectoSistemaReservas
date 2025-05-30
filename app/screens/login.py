@@ -36,7 +36,10 @@ class LoginScreen(ttk.Frame):
             form_frame,
             text="ingresar",
             bootstyle=SUCCESS,
-            comman=lambda: self.show_screens("user") if handle_login(self.entry_mail.get().strip(), self.entry_password.get().strip()) == True else None  # funcion de ingreso
+            comman=lambda: self.show_screens("user") if self.controller.set_access_token(handle_login(
+                self.entry_mail.get(),
+                self.entry_password.get()
+            )) else None  # Corregido: 'comman' a 'command
         )
         self.btn.grid(row=6, column=1, pady=10)
 

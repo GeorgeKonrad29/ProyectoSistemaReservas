@@ -27,11 +27,10 @@ def handle_login(email: str, password: str):
         print(f"Respuesta: {login_response_data}")
 
             # Guardar el token en la sesión del controlador
-        self.controller.set_access_token(login_response_data.get("access_token"))
-        self.controller.show_screens("dashboard_screen")
+        
         response.raise_for_status()  # Lanza un error si la respuesta no es 200
         Messagebox.show_info("Login exitoso", "Éxito")
-        return True
+        return login_response_data.get("access_token")  # Retorna el token de acceso
         # Aquí puedes redirigir a otra pantalla después de un login exitoso
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 401:
