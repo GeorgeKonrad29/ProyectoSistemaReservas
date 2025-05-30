@@ -32,6 +32,13 @@ class MainApp(ttk.Window):
         # metodos
         self.create_screens(terms_file_relative_path)
         self.show_screens("login")
+    def set_access_token(self, token):
+        """
+        Guarda el token de acceso JWT recibido del backend.
+        """
+        self.access_token = token
+        print(f"Token de acceso guardado en MainApp: {self.access_token[:30]}...") # Imprime solo un fragmento
+        
 
     def create_screens(self, terms_filepath):
         screens = {
