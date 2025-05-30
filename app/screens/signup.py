@@ -75,9 +75,9 @@ class SignUpScreen(ttk.Frame):
         self.controller.show_screens(name_screen)
 
     def signup(self):
-        name = self.entry_mail.get()
+        name = self.entry_name.get()
         last_name = self.entry_last_name.get()
-        mail = self.entry_password.get()
+        mail = self.entry_mail.get()
         password = self.entry_password.get()
         confirmation = self.entry_confirmation.get()
 

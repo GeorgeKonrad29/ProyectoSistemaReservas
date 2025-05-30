@@ -51,6 +51,7 @@ def trigger_signup(mail, name, last_name, password, confirmation, controller):
 
 def is_valid_email(email: str) -> bool:
     """Valida si un email tiene formato correcto"""
+    print(f"Validando email: {email}")
     pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
     return re.match(pattern, email) is not None
 
@@ -93,7 +94,7 @@ def validate_signup_fields(first_name: str,
         show_error(controller, "Debe ingresar al menos un nombre y un apellido")
         return False
 
-    if  is_valid_email(email):
+    if  not is_valid_email(email):
         show_error(controller, "El correo no es válido")
         return False
 
@@ -122,8 +123,9 @@ async def handle_signup_async(mail: str,
     # Petición asíncrona al servidor
     try:
         async with aiohttp.ClientSession() as session:
+            print(f"Registrando usuario: {name} {last_name} con correo: {mail} contraseña: {password}")
             async with session.post(
-                "http://localhost:8000/signup/",
+                "http://192.168.0.14:8000/signup",
                 json={
                     "correo": mail,
                     "nombres": name,
