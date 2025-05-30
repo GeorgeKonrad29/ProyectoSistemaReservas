@@ -125,7 +125,7 @@ async def handle_signup_async(mail: str,
         async with aiohttp.ClientSession() as session:
             print(f"Registrando usuario: {name} {last_name} con correo: {mail} contraseña: {password}")
             async with session.post(
-                "http://192.168.0.14:8000/signup",
+                "http://localhost:8000/signup",
                 json={
                     "correo": mail,
                     "nombres": name,

@@ -36,10 +36,7 @@ class LoginScreen(ttk.Frame):
             form_frame,
             text="ingresar",
             bootstyle=SUCCESS,
-            comman=lambda: self.show_screens("user") if self.controller.set_access_token(handle_login(
-                self.entry_mail.get(),
-                self.entry_password.get()
-            )) else None  # Corregido: 'comman' a 'command
+            comman=lambda: self.login()
         )
         self.btn.grid(row=6, column=1, pady=10)
 
@@ -53,3 +50,9 @@ class LoginScreen(ttk.Frame):
 
     def show_screens(self, name_screen):
         self.controller.show_screens(name_screen)
+
+    def login(self):
+        token = handle_login(self.entry_mail.get(), self.entry_password.get())
+        if token:
+            self.controller.set_access_token(token)
+            self.show_screens("home")

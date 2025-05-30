@@ -7,16 +7,16 @@ def handle_login(email: str, password: str):
         Messagebox.show_error("Todos los campos son obligatorios", "Error")
         return
     try:
-            # ✅ JSON correcto con claves esperadas por el backend
+        # ✅ JSON correcto con claves esperadas por el backend
         login_data = {
             "username": email,
             "password": password
         }
 
         response = requests.post(
-            "http://192.168.0.14:8000/login",
+            "http://localhost:8000/login",
             data=login_data,  # ✅ Cambiado de data= a json=
-            headers={"Content-Type": "application/x-www-form-urlencoded"}  # ✅ Cabecera correcta para JSON
+            headers={"Content-Type": "application/x-www-form-urlencoded"}
         )
 
         response.raise_for_status()
@@ -26,8 +26,8 @@ def handle_login(email: str, password: str):
         Messagebox.show_info("Login exitoso", "Éxito")
         print(f"Respuesta: {login_response_data}")
 
-            # Guardar el token en la sesión del controlador
-        
+        # Guardar el token en la sesión del controlador
+
         response.raise_for_status()  # Lanza un error si la respuesta no es 200
         Messagebox.show_info("Login exitoso", "Éxito")
         return login_response_data.get("access_token")  # Retorna el token de acceso

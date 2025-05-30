@@ -38,7 +38,7 @@ class MainApp(ttk.Window):
         """
         self.access_token = token
         print(f"Token de acceso guardado en MainApp: {self.access_token[:30]}...") # Imprime solo un fragmento
-        
+
 
     def create_screens(self, terms_filepath):
         screens = {
